@@ -4,6 +4,29 @@ Speech recognition with Whisper in MLX. Whisper is a set of open source speech
 recognition models from OpenAI, ranging from 39 million to 1.5 billion
 parameters.[^1]
 
+### Serving fork
+
+The `serving` branch is based on the source used for `mlx-whisper` 0.4.3
+(commit `c1af8c46`). It imports word-alignment code only when a transcription
+actually requests word timestamps. Ordinary transcription can therefore start
+without importing the alignment module and its Numba/SciPy dependency chain.
+The declared dependencies, inference computations, and alignment algorithm are
+unchanged. A function-local import keeps the change compatible with the
+upstream Python versions; it does not require global lazy-import mode.
+
+The first word-timestamp request still pays the alignment initialization cost;
+this change does not claim to speed up the GPU decoder. Import regression
+checks run without model downloads:
+
+```sh
+cd whisper
+python -m unittest test_lazy_alignment -v
+```
+
+Full model comparisons and measurements are maintained by the serving deployment
+repository. A change being present on this branch does not imply an end-to-end
+performance improvement has been measured for every environment.
+
 ### Setup
 
 Install [`ffmpeg`](https://ffmpeg.org/):
