@@ -14,8 +14,16 @@ The declared dependencies, inference computations, and alignment algorithm are
 unchanged. A function-local import keeps the change compatible with the
 upstream Python versions; it does not require global lazy-import mode.
 
-The first word-timestamp request still pays the alignment initialization cost;
-this change does not claim to speed up the GPU decoder. Import regression
+Attention uses MLX's fused kernel (`mx.fast.scaled_dot_product_attention`)
+instead of separate `q @ k^T`, float32 softmax and `w @ v`; the attention
+logits stay a lazy value that only word timestamps read, so decoding no longer
+rescales and transposes the cached cross-attention keys at every step.
+large-v3 FP16 on an M5 Ultra, temperature 0: 1.26-1.31x faster (LibriSpeech
+100 files 28.9 -> 22.8 s, AISHELL-1 100 files 26.6 -> 21.1 s, 16-minute
+recording 20.0 -> 15.4 s); 261 of 262 transcripts identical, the other has the
+same word error rate.
+
+The first word-timestamp request still pays the alignment initialization cost. Import regression
 checks run without model downloads:
 
 ```sh
