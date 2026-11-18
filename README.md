@@ -1,3 +1,12 @@
+> **ain-soph fork (`serving` branch, based on upstream `c1af8c46` (the source of `mlx-whisper` 0.4.3); only `whisper/` changes).** What differs from upstream:
+>
+> | Change | Why | Enable / default | Effect (M5 Ultra) |
+> |---|---|---|---|
+> | Whisper: import word-alignment code only when word timestamps are requested | import pulled in Numba/SciPy every time | always | import 0.530 → 0.134 s; import RSS −96 MiB; outputs identical |
+> | Whisper: fused attention; attention logits only computed when read | three-step attention rescaled cached cross-attention keys every step | always | large-v3 FP16 1.26–1.31× (100 LibriSpeech files 28.9 → 22.8 s); 261/262 transcripts identical, the other same WER |
+>
+> Full numbers: [Speech to text in ain-soph/llm-serving](https://github.com/ain-soph/llm-serving/blob/main/docs/performance.md#语音转写). Upstream PRs: [#1464](https://github.com/ml-explore/mlx-examples/pull/1464) (open).
+
 # MLX Examples
 
 This repo contains a variety of standalone examples using the [MLX

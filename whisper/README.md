@@ -6,34 +6,8 @@ parameters.[^1]
 
 ### Serving fork
 
-The `serving` branch is based on the source used for `mlx-whisper` 0.4.3
-(commit `c1af8c46`). It imports word-alignment code only when a transcription
-actually requests word timestamps. Ordinary transcription can therefore start
-without importing the alignment module and its Numba/SciPy dependency chain.
-The declared dependencies, inference computations, and alignment algorithm are
-unchanged. A function-local import keeps the change compatible with the
-upstream Python versions; it does not require global lazy-import mode.
-
-Attention uses MLX's fused kernel (`mx.fast.scaled_dot_product_attention`)
-instead of separate `q @ k^T`, float32 softmax and `w @ v`; the attention
-logits stay a lazy value that only word timestamps read, so decoding no longer
-rescales and transposes the cached cross-attention keys at every step.
-large-v3 FP16 on an M5 Ultra, temperature 0: 1.26-1.31x faster (LibriSpeech
-100 files 28.9 -> 22.8 s, AISHELL-1 100 files 26.6 -> 21.1 s, 16-minute
-recording 20.0 -> 15.4 s); 261 of 262 transcripts identical, the other has the
-same word error rate.
-
-The first word-timestamp request still pays the alignment initialization cost. Import regression
-checks run without model downloads:
-
-```sh
-cd whisper
-python -m unittest test_lazy_alignment -v
-```
-
-Full model comparisons and measurements are maintained by the serving deployment
-repository. A change being present on this branch does not imply an end-to-end
-performance improvement has been measured for every environment.
+The `serving` branch changes are listed at the top of the [repository README](../README.md).
+Import regression check (no model download): `cd whisper && python -m unittest test_lazy_alignment -v`.
 
 ### Setup
 
